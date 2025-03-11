@@ -3,14 +3,14 @@
  */
 package org.example;
 
-//importaciones para webdriver
+// importaciones para webdriver
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.openqa.selenium.chrome.ChromeOptions;
 
-//anotaciones para testng
+// anotaciones para testng
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -18,17 +18,33 @@ import org.testng.annotations.BeforeMethod;
 
 import org.openqa.selenium.*;
 import org.openqa.selenium.io.FileHandler;
+
+import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.io.File;
 import java.time.Duration;
 import java.io.IOException;
 
+// GRABACIÓN DE PANTALLA
+import org.monte.media.Format;
+import org.monte.media.FormatKeys.MediaType;
+import org.monte.media.math.Rational;
+
+import java.awt.*;
+import java.io.File;
+
+import static org.monte.media.AudioFormatKeys.*;
+import static org.monte.media.VideoFormatKeys.*;
 
 public class AppTest {
     WebDriver driver;
     WebDriverWait wait;
+    private org.monte.screenrecorder.ScreenRecorder screenRecorder;
 
     @BeforeClass
-    public void initSetup () {
+    public void initSetup () throws Exception {
+        startRecording();
+
         ChromeOptions options = new ChromeOptions();
         options.addArguments("--remote-allow-origins=*");
         options.addArguments("--disable-gpu");
@@ -41,18 +57,100 @@ public class AppTest {
         driver = new ChromeDriver(options);
         driver.manage().window().maximize();
         //Espera global
-        wait = new WebDriverWait(driver, Duration.ofSeconds(5));
+        wait = new WebDriverWait(driver, Duration.ofMillis(2000));
         //Espera especifica
-        wait = new WebDriverWait(driver, Duration.ofSeconds(5));
+        wait = new WebDriverWait(driver, Duration.ofMillis(2000));
     }
 
     @Test
     public void OpenNav () throws IOException, InterruptedException {
         //abrir el navegador en la dirección indicada
-        driver.get("https://www.google.com");
+        driver.get("https://www.selenium.dev/documentation/");
         //Se debe obtener el identificador del frame
         String mainWindowHadle = driver.getWindowHandle();
-
+        takeScreenshot("1.png");
+        WebElement frameSelector = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//a[@id='m-documentationoverview']")));
+        frameSelector.click();
+        takeScreenshot("2.png");
+        frameSelector = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//a[@id='m-documentationwebdriver']")));
+        frameSelector.click();
+        takeScreenshot("3.png");
+        frameSelector = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//a[@id='m-documentationselenium_manager']")));
+        frameSelector.click();
+        takeScreenshot("4.png");
+        frameSelector = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//a[@id='m-documentationgrid']")));
+        frameSelector.click();
+        takeScreenshot("5.png");
+        frameSelector = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//a[@id='m-documentationie_driver_server']")));
+        frameSelector.click();
+        takeScreenshot("6.png");
+        frameSelector = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//a[@id='m-documentationide']")));
+        frameSelector.click();
+        takeScreenshot("7.png");
+        frameSelector = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//a[@id='m-documentationtest_practices']")));
+        frameSelector.click();
+        takeScreenshot("8.png");
+        frameSelector = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//a[@id='m-documentationlegacy']")));
+        frameSelector.click();
+        takeScreenshot("9.png");
+        frameSelector = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//a[@id='m-documentationabout']")));
+        frameSelector.click();
+        takeScreenshot("10.png");
 
     }
+
+    @AfterClass
+    public void tearDown() {
+        if (driver != null) {
+            driver.quit();
+        }
+    }
+
+    public void takeScreenshot(String fileName) throws IOException {
+        // Castear el WebDriver a TakesScreenshot
+        TakesScreenshot ts = (TakesScreenshot) driver;
+
+        // Obtener la captura de pantalla y guardarla en un archivo
+        File source = ts.getScreenshotAs(OutputType.FILE);
+        //en la carpeta raiz crear la caperta screenshots
+        File destination = new File("./screenshots/" + fileName);
+
+        // Guardar el archivo en el directorio deseado
+        FileHandler.copy(source, destination);
+    }
+
+    public void startRecording() throws Exception {
+        File file = new File("./test-recordings/");
+        if (!file.exists()) {
+            file.mkdirs();
+        }
+
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        Rectangle captureSize = new Rectangle(0, 0, screenSize.width, screenSize.height);
+
+        GraphicsConfiguration gc = GraphicsEnvironment
+                .getLocalGraphicsEnvironment()
+                .getDefaultScreenDevice()
+                .getDefaultConfiguration();
+
+        screenRecorder = new org.monte.screenrecorder.ScreenRecorder(gc, captureSize,
+                new Format(MediaTypeKey, MediaType.FILE, MimeTypeKey, MIME_AVI),
+                new Format(MediaTypeKey, MediaType.VIDEO, EncodingKey, ENCODING_AVI_MJPG, // MJPEG para VLC
+                        CompressorNameKey, ENCODING_AVI_MJPG,
+                        DepthKey, 24, FrameRateKey, Rational.valueOf(30), // FPS más fluidos para VLC
+                        QualityKey, 1.0f, KeyFrameIntervalKey, 15 * 60),
+                new Format(MediaTypeKey, MediaType.VIDEO, EncodingKey, "black", FrameRateKey, Rational.valueOf(30)),
+                null, file);
+
+        screenRecorder.start();
+        System.out.println("Grabación iniciada...");
+    }
+
+    public void stopRecording() throws Exception {
+        if (screenRecorder != null) {
+            screenRecorder.stop();
+            System.out.println("Grabación detenida.");
+        }
+    }
+
 }

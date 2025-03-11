@@ -20,6 +20,9 @@ dependencies {
     implementation 'io.github.bonigarcia:webdrivermanager:5.9.2'
     testImplementation 'org.testng:testng:7.10.2'
     implementation 'org.slf4j:slf4j-simple:2.0.9'
+    // https://mvnrepository.com/artifact/com.github.stephenc.monte/monte-screen-recorder
+    implementation 'com.github.stephenc.monte:monte-screen-recorder:0.7.7.0'
+
 }
 
 // Apply a specific Java toolchain to ease working on different environments.
